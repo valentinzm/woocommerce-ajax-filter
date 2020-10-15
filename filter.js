@@ -1,56 +1,46 @@
-function singleParametr(option) {
-    return `<div class="param">${option}</div>`
+document.querySelector('.filter__search').addEventListener('input', blogFilter);
+document.querySelectorAll('.filter__item').forEach((btn) => { btn.addEventListener('click', blogFilter) });
+document.querySelector('.blog__loadmore').addEventListener('click', load);
+
+
+function blogFilter(event) {
+    event.preventDefault();
+
+    const blogContainer = document.querySelector('#response');
+
+    let search = document.querySelector('.filter__search').value;
+    console.log(search);
+
+    if (this.classList.contains('filter__active')) {
+        this.classList.remove('filter__active');
+    } else {
+        this.classList.add('filter__active');
+    }
+    let
+        data = new FormData();
+    data.append('action', 'blog_filter');
+    data.append('page', 1);
+    data.append('search', search);
+
+    let categories = [];
+    document.querySelectorAll('.filter__active').forEach(function(e) {
+        categories.push(e.dataset.cat);
+    });
+    data.append('categories', categories);
+
+    const admin_url = '/wp-admin/admin-ajax.php';
+    fetch(admin_url, {
+            method: 'post',
+            body: data
+        })
+        .then(response => response.text())
+        .then(text => {
+            blogContainer.innerHTML = text;
+            document.querySelector('.blog__loadmore').addEventListener('click', load);
+        })
 }
 
 
-let form = document.querySelector('#filter');
-form.addEventListener('change', shopFilter);
-
-function shopFilter(e) {
-
-    let params = document.querySelector('.filter-params');
-    let list = [];
-    document.querySelectorAll('#filter input:checked').forEach(function(e) {
-        let name = e.dataset.name;
-        list.push(name);
-        const create_params = list.map(item => singleParametr(item));
-        let htmlParametrs = create_params.join(' ');
-        params.innerHTML = htmlParametrs;
-    });
-
-    document.querySelectorAll('.param').forEach(function(e) {
-        e.addEventListener('click', removeParam);
-    });
-
-
-    var filter = jQuery('#filter');
-    jQuery.ajax({
-        url: filter.attr('action'),
-        data: filter.serialize(), // form data
-        type: filter.attr('method'), // POST
-        beforeSend: function(xhr) {
-            jQuery('#response').addClass('processing'); // changing the button label
-        },
-        success: function(data) {
-
-            jQuery('#response').html(data); // insert data
-            jQuery('#response').removeClass('processing'); // changing the button label
-        }
-    });
-    return false;
-} //shopFilter
-
-
-
-document.querySelectorAll('.param').forEach(function(e) {
-    e.addEventListener('click', removeParam);
-});
-
-function removeParam(e) {
-    this.remove();
-    let parametr = 'input[data-name="' + this.textContent + '"]';
-    let removedInput = document.querySelector(parametr);
-    removedInput.checked = false;
-    shopFilter();
-
+function load(event) {
+    event.preventDefault();
 }
