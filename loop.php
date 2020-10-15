@@ -15,7 +15,7 @@
 
     </form>
 
-    <div id="response">
+    <div id="response" data-topage="2">
        <?php
        $args = array(
        	'posts_per_page' => 5,
@@ -23,7 +23,7 @@
        );
 
        $query = new WP_Query( $args );
-       $count = $query->post_count;
+       $count = $query->found_posts;
        // Цикл
        if ( $query->have_posts() ) {
        	while ( $query->have_posts() ) {
@@ -31,7 +31,7 @@
           get_template_part('/template-parts/blog/single-blog');
        	}
        } else {
-       	// Постов не найдено
+       	 echo '<h4 class="blog__title">Постов не найдено</h4>';
        }
        // Возвращаем оригинальные данные поста. Сбрасываем $post.
        wp_reset_postdata();
