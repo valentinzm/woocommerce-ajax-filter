@@ -36,6 +36,8 @@ add_action('wp_ajax_blog_loadmore', 'blog_loadmore');
 add_action('wp_ajax_nopriv_blog_loadmore', 'blog_loadmore');
 function blog_loadmore(){
 
+	global $wp_query;
+
 	$page = $_POST['page'];
 	$categories = $_POST['categories'];
 	$s = $_POST['search'];
@@ -49,8 +51,12 @@ function blog_loadmore(){
 		's' => $s,
 		'cat' => array( $_POST['categories'] ),
 	);
-	//
+
 	$query = new WP_Query( $params );
+
+
+	$current_page = $query->get( 'paged' );
+
 	$count = $query->found_posts;
 	if( $query->have_posts() ) :
 			while( $query->have_posts() ): $query->the_post();
@@ -60,9 +66,10 @@ function blog_loadmore(){
 		else :
 			echo '<h4 class="blog__title">Постов не найдено</h4>';
 		endif;
-		if($count > 5){
-				echo '<a href="#" class="blog__loadmore">Смотреть еще новости</a>';
+		if ( $current_page != $query->max_num_pages ) {
+			echo '<a href="#" class="blog__loadmore">Смотреть еще новости</a>';
 		}
+
 		die();
 
 }

@@ -50,7 +50,6 @@ function load(event) {
 
     let blogContainerPage = document.querySelector('#response').dataset.topage++;
 
-    console.log(blogContainerPage);
     data = new FormData();
     data.append('action', 'blog_loadmore');
     data.append('page', blogContainerPage);
