@@ -15,7 +15,7 @@
 
 
 class WPNamelessFilter {
-    
+    public $parameters = [];
     public function __construct()
     {   
         
@@ -28,18 +28,17 @@ class WPNamelessFilter {
     
 
     public function filter_shortcode( $atts ){
-        
-        
+
         $atts = shortcode_atts( [
             'post_type' => 'post',
             'amount'    => 6,
             'paged'     => '',
         ], $atts );
-    
-    $this->filter_buttons();
-    echo '<div class="row" id="filter">';
-    $this->filter_body( $atts );
-    echo '</div>';
+        
+        $this->filter_form( $atts );
+        echo '<div class="row" id="filter">';
+        $this->filter_body( $atts );
+        echo '</div>';
         
         
     }
@@ -92,21 +91,29 @@ class WPNamelessFilter {
             // Постов не найдено
         }
         wp_reset_postdata();
-
-        $this->pagination( $post_count, $params['amount'] );
+        if( !( $post_count <= $params['amount']) ){
+            $this->pagination( $post_count, $params['amount'] );
+        }
+        
 
     }
 
-    public function filter_buttons(){
+    public function filter_form( $params ){
         
+        $params = shortcode_atts( [
+            'post_type' => 'post',
+            'amount'    => 6,
+            'paged'     => '',
+        ], $params );
+        $params_json = json_encode( $params );
         $terms  = get_terms( 'category' );
-        $form = '<div class="col-12 d-flex flex-wrap mb-5">';
+        $form = '<form class="col-12 d-flex flex-wrap mb-5 filters" data-filter="'.htmlspecialchars( $params_json ).'">';
         foreach ($terms as $term){
             $form .= '<a href="#" data-term="'.$term->term_id.'" class="btn btn-primary me-2 btn-filter">';
             $form .= $term->slug;
             $form .= '</a>';          
         }
-        $form .= '</div>'; 
+        $form .= '</form>'; 
 
         echo $form;
     }
@@ -119,13 +126,11 @@ class WPNamelessFilter {
         ob_start(); ?>
         <nav aria-label="Page navigation example">
             <ul class="pagination"> 
-                <li class="page-item"><a class="page-link" href="#">Previous</a></li>
                     <?php
                     for ($i = 1; $i <= $page_count; $i++) {
                         echo '<li class="page-item"><a class="page-link" href="#">'.$i.'</a></li>';
                     } 
-                ?>
-                <li class="page-item"><a class="page-link" href="#">Next</a></li>     
+                ?> 
             </ul>
         </nav>
         <?php
@@ -150,14 +155,17 @@ class WPNamelessFilter {
         
         if( !isset( $_POST['nonce'] ) || !wp_verify_nonce( $_POST['nonce'], 'plugin' ) )
         die('Permission denied');
-        
+              
+        $post_type = $_POST['post_type'];
+        $ammount   = $_POST['amount'];
+
         $params = [
-            'post_type' => 'post',
-            'amount'    => 3,
+            'post_type' => $post_type,
+            'amount'    => $ammount,
             'paged'     => $_POST['paged'],
         ];
 
-        $this->filter_body( $params );     
+        $this->filter_body( $params ); 
         wp_die();
         
     }

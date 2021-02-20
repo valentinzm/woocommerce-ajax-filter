@@ -5,6 +5,7 @@ document.querySelectorAll('.page-link').forEach( (item) => {
 document.querySelectorAll('.btn-filter').forEach( (btn) => {
     btn.addEventListener('click', ajaxFilter );
 });
+document.querySelector('.page-item').classList.add('active');
 const container = document.querySelector('#filter');
 function ajaxFilter( event ){
     event.preventDefault();
@@ -19,12 +20,26 @@ function ajaxFilter( event ){
     document.querySelectorAll('.btn-danger').forEach( (btn) => {
         terms.push( btn.dataset.term )
     });
+
+
+    if( this.classList.contains('page-link') ){
+        paged = this.textContent;
+    } else {
+        paged = 1;
+    }
     
+    const filter_params = document.querySelector('.filters').dataset.filter;
+    let params_json = JSON.parse(filter_params);
+
+                
     let data = new FormData();
     data.append('action', 'filtered');
     data.append('nonce', plugin.nonce);
-    data.append('paged', this.textContent );
+    data.append('paged',  paged);
     data.append('terms', terms.toString() );
+
+    data.append('post_type', params_json.post_type );
+    data.append('amount', params_json.amount );
 
     const admin_ajax_url = plugin.ajax_url;
 
@@ -44,8 +59,14 @@ function ajaxFilter( event ){
             document.querySelectorAll('.page-link').forEach( (item) => {
                 item.addEventListener('click', ajaxFilter)
             });
+            console.log(paged);
+            document.querySelectorAll('.page-link').forEach(item => {
+                if (item.textContent == paged) {
+                    item.parentElement.classList.add('active'); 
+                }
+            })
         })
         .catch(() => { console.log('error') })
-        .finally(() => { console.log('finally') });
+        .finally(() => { console.log() });
 
 }
