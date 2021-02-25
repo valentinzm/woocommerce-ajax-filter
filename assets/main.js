@@ -1,11 +1,26 @@
-document.querySelectorAll('.page-link').forEach( (item) => {
-    item.addEventListener('click', ajaxFilter)
-});
 
-document.querySelectorAll('.btn-filter').forEach( (btn) => {
-    btn.addEventListener('click', ajaxFilter );
-});
-document.querySelector('.page-item').classList.add('active');
+    
+    document.querySelectorAll('.page-link').forEach( (item) => {
+        item.addEventListener('click', ajaxFilter)
+    });
+    
+    document.querySelectorAll('.btn-filter').forEach( (btn) => {
+        btn.addEventListener('click', ajaxFilter );
+    });
+    
+    const loadmore  = document.querySelector('.loadmore'); 
+    const firstLink = document.querySelector('.page-item');
+
+    if( loadmore !== null ) {
+        loadmore.addEventListener('click', ajaxFilter );
+    } else if ( firstLink !== null ) {
+        firstLink.classList.add('active');
+    } else {
+        console.log('ничгео не делаем');
+    }
+
+
+
 const container = document.querySelector('#filter');
 function ajaxFilter( event ){
     event.preventDefault();
@@ -23,11 +38,15 @@ function ajaxFilter( event ){
 
 
     if( this.classList.contains('page-link') ){
-        paged = this.textContent;
+        paged = this.dataset.page;
+    } else if ( this.classList.contains('loadmore') ) {
+        this.remove();
+        paged = this.dataset.page;
     } else {
         paged = 1;
     }
     
+
     const filter_params = document.querySelector('.filters').dataset.filter;
     let params_json = JSON.parse(filter_params);
 
@@ -40,6 +59,7 @@ function ajaxFilter( event ){
 
     data.append('post_type', params_json.post_type );
     data.append('amount', params_json.amount );
+    data.append('pagination', params_json.pagination );
 
     const admin_ajax_url = plugin.ajax_url;
 
@@ -51,7 +71,16 @@ function ajaxFilter( event ){
           return response.text();
         })
         .then((data) => {
-            container.innerHTML = data;
+            if( this.classList.contains('loadmore') ){
+                container.innerHTML += data;
+            } else {
+                container.innerHTML = data;
+            }
+            
+            const more = document.querySelector('.loadmore');
+            if( more !== null ) {
+                more.addEventListener('click', ajaxFilter );
+            }
             
             document.querySelectorAll('.btn-filter').forEach( (btn) => {
                 btn.addEventListener('click', ajaxFilter );
@@ -59,14 +88,20 @@ function ajaxFilter( event ){
             document.querySelectorAll('.page-link').forEach( (item) => {
                 item.addEventListener('click', ajaxFilter)
             });
-            console.log(paged);
+            
             document.querySelectorAll('.page-link').forEach(item => {
                 if (item.textContent == paged) {
                     item.parentElement.classList.add('active'); 
                 }
-            })
+            });
+            
+            
+
         })
         .catch(() => { console.log('error') })
-        .finally(() => { console.log() });
+        .finally(() => {});
+            
+
+        
 
 }

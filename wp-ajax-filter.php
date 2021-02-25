@@ -30,9 +30,10 @@ class WPNamelessFilter {
     public function filter_shortcode( $atts ){
 
         $atts = shortcode_atts( [
-            'post_type' => 'post',
-            'amount'    => 6,
-            'paged'     => '',
+            'post_type'  => 'post',
+            'amount'     => 6,
+            'paged'      => '',
+            'pagination' => 'pages'
         ], $atts );
         
         $this->filter_form( $atts );
@@ -68,6 +69,7 @@ class WPNamelessFilter {
             'post_type'      => $params['post_type'],
             'posts_per_page' => $params['amount'],
             'paged'          => $params['paged'],
+            'pagination'     => $params['pagination'],
             'tax_query'      => $tax_query,
         );  
 
@@ -91,19 +93,28 @@ class WPNamelessFilter {
             // Постов не найдено
         }
         wp_reset_postdata();
+
         if( !( $post_count <= $params['amount']) ){
-            $this->pagination( $post_count, $params['amount'] );
+            if( $params['pagination'] == 'loadmore' ){ 
+                $this->loadmore( $post_count, $params['amount'], $params['paged'] );
+                 } else { 
+                $this->pagination( $post_count, $params['amount'] );
+            }
         }
+
         
+
+
 
     }
 
     public function filter_form( $params ){
         
         $params = shortcode_atts( [
-            'post_type' => 'post',
-            'amount'    => 6,
-            'paged'     => '',
+            'post_type'  => 'post',
+            'amount'     => 6,
+            'paged'      => '',
+            'pagination' => 'pages',
         ], $params );
         $params_json = json_encode( $params );
         $terms  = get_terms( 'category' );
@@ -118,7 +129,7 @@ class WPNamelessFilter {
         echo $form;
     }
 
-    public function pagination( $count, $amount  ){  
+    public function pagination( $count, $amount ){  
         $page_count = ceil( $count / $amount );
 
         $pagination = '';
@@ -128,7 +139,7 @@ class WPNamelessFilter {
             <ul class="pagination"> 
                     <?php
                     for ($i = 1; $i <= $page_count; $i++) {
-                        echo '<li class="page-item"><a class="page-link" href="#">'.$i.'</a></li>';
+                        echo '<li class="page-item"><a data-page="'.$i.'" class="page-link" href="#">'.$i.'</a></li>';
                     } 
                 ?> 
             </ul>
@@ -139,6 +150,19 @@ class WPNamelessFilter {
         ob_end_clean();
 
         echo $pagination;
+        
+    }
+
+    public function loadmore( $count, $amount, $page ){
+        $page_count = ceil( $count / $amount );
+        if ( $page == NULL ){
+            $page = 2;
+        } else {
+            $page++;
+        }
+        if( $page_count >= $page ){
+            echo '<a href="#" class="btn btn-primary loadmore" data-page="'.$page.'">Loadmore</a>';
+        }
         
     }
 
@@ -160,9 +184,10 @@ class WPNamelessFilter {
         $ammount   = $_POST['amount'];
 
         $params = [
-            'post_type' => $post_type,
-            'amount'    => $ammount,
-            'paged'     => $_POST['paged'],
+            'post_type'  => $post_type,
+            'amount'     => $ammount,
+            'paged'      => $_POST['paged'],
+            'pagination' => $_POST['pagination'],
         ];
 
         $this->filter_body( $params ); 
