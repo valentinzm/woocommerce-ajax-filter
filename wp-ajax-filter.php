@@ -117,7 +117,12 @@ class WPNamelessFilter {
             'pagination' => 'pages',
         ], $params );
         $params_json = json_encode( $params );
-        $terms  = get_terms( 'category' );
+        $cat_name = 'category';
+        if( $params['post_type'] == 'product'  ){
+            $cat_name = 'product_cat';
+        }
+    
+        $terms  = get_terms( $cat_name );
         $form = '<form class="col-12 d-flex flex-wrap mb-5 filters" data-filter="'.htmlspecialchars( $params_json ).'">';
         foreach ($terms as $term){
             $form .= '<a href="#" data-term="'.$term->term_id.'" class="btn btn-primary me-2 btn-filter">';

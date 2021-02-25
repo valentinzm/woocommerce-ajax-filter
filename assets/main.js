@@ -46,7 +46,7 @@ function ajaxFilter( event ){
         paged = 1;
     }
     
-
+    container.style.opacity = '.5';
     const filter_params = document.querySelector('.filters').dataset.filter;
     let params_json = JSON.parse(filter_params);
 
@@ -99,7 +99,9 @@ function ajaxFilter( event ){
 
         })
         .catch(() => { console.log('error') })
-        .finally(() => {});
+        .finally(() => {
+            container.style.opacity = '1';
+        });
             
 
         
